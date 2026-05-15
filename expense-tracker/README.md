@@ -55,11 +55,15 @@ python src/expense_tracker.py <comando>
 - Listar despesas: `python src/expense_tracker.py list`
 - Resumo total: `python src/expense_tracker.py summary`
 - Deletar despesa: `python src/expense_tracker.py delete <id>`
+- Converter despesas: `python src/expense_tracker.py convert <moeda>`
+
+A conversão usa a API pública `https://open.er-api.com` para buscar a cotação atual e exibir o total de despesas em outra moeda.
 
 Exemplo:
 ```bash
 python src/expense_tracker.py add 15.50 "Café da manhã"
 python src/expense_tracker.py list
+python src/expense_tracker.py convert USD
 ```
 
 ## Rodar os Testes
