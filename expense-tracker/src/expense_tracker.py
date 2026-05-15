@@ -9,9 +9,12 @@ Helps users manage their finances by recording, viewing, and summarizing expense
 import argparse
 import json
 import os
+import urllib.parse
+import urllib.request
 from datetime import datetime
 
 DATA_FILE = 'expenses.json'
+API_URL = 'https://api.exchangerate.host/latest'
 
 
 def load_expenses():
@@ -57,6 +60,43 @@ def summary():
     print(f"Total expenses: ${total:.2f}")
 
 
+def get_exchange_rate(base_currency, target_currency):
+    target_currency = target_currency.upper()
+    params = urllib.parse.urlencode({
+        'base': base_currency.upper(),
+        'symbols': target_currency,
+    })
+    url = f"{API_URL}?{params}"
+
+    try:
+        with urllib.request.urlopen(url, timeout=10) as response:
+            data = json.load(response)
+    except Exception as exc:
+        raise RuntimeError(f"Failed to fetch exchange rate: {exc}")
+
+    if not data.get('success', True):
+        raise RuntimeError('Exchange rate API returned an error')
+
+    rates = data.get('rates', {})
+    if target_currency not in rates:
+        raise ValueError(f"Currency '{target_currency}' not found in API response")
+
+    return float(rates[target_currency])
+
+
+def convert_expenses(target_currency, base_currency='BRL'):
+    expenses = load_expenses()
+    total = sum(exp['amount'] for exp in expenses)
+    rate = get_exchange_rate(base_currency, target_currency)
+    converted = total * rate
+
+    print(f"Total expenses: {total:.2f} {base_currency}")
+    print(
+        f"Converted to {target_currency.upper()}: {converted:.2f} "
+        f"{target_currency.upper()} (rate: {rate:.4f})"
+    )
+
+
 def delete_expense(expense_id):
     expenses = load_expenses()
     expenses = [exp for exp in expenses if exp['id'] != int(expense_id)]
@@ -79,6 +119,14 @@ def main():
     # Summary command
     subparsers.add_parser('summary', help='Show total expenses')
 
+    # Convert command
+    convert_parser = subparsers.add_parser(
+        'convert', help='Convert total expenses from BRL to another currency'
+    )
+    convert_parser.add_argument(
+        'currency', help='Target currency code, e.g. USD or EUR'
+    )
+
     # Delete command
     delete_parser = subparsers.add_parser('delete', help='Delete an expense by ID')
     delete_parser.add_argument('id', type=int, help='Expense ID')
@@ -91,6 +139,8 @@ def main():
         list_expenses()
     elif args.command == 'summary':
         summary()
+    elif args.command == 'convert':
+        convert_expenses(args.currency)
     elif args.command == 'delete':
         delete_expense(args.id)
     else:
