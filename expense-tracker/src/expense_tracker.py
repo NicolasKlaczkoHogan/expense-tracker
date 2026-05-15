@@ -14,7 +14,7 @@ import urllib.request
 from datetime import datetime
 
 DATA_FILE = 'expenses.json'
-API_URL = 'https://api.exchangerate.host/latest'
+API_URL = 'https://open.er-api.com/v6/latest'
 
 
 def load_expenses():
@@ -62,11 +62,8 @@ def summary():
 
 def get_exchange_rate(base_currency, target_currency):
     target_currency = target_currency.upper()
-    params = urllib.parse.urlencode({
-        'base': base_currency.upper(),
-        'symbols': target_currency,
-    })
-    url = f"{API_URL}?{params}"
+    base_currency = base_currency.upper()
+    url = f"{API_URL}/{base_currency}"
 
     try:
         with urllib.request.urlopen(url, timeout=10) as response:
@@ -74,7 +71,7 @@ def get_exchange_rate(base_currency, target_currency):
     except Exception as exc:
         raise RuntimeError(f"Failed to fetch exchange rate: {exc}")
 
-    if not data.get('success', True):
+    if data.get('result') != 'success' and not data.get('success', True):
         raise RuntimeError('Exchange rate API returned an error')
 
     rates = data.get('rates', {})

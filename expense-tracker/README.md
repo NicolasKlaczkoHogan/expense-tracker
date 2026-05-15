@@ -57,7 +57,7 @@ python src/expense_tracker.py <comando>
 - Deletar despesa: `python src/expense_tracker.py delete <id>`
 - Converter despesas: `python src/expense_tracker.py convert <moeda>`
 
-A conversão usa a API pública `https://api.exchangerate.host` para buscar a cotação atual e exibir o total de despesas em outra moeda.
+A conversão usa a API pública `https://open.er-api.com` para buscar a cotação atual e exibir o total de despesas em outra moeda.
 
 Exemplo:
 ```bash

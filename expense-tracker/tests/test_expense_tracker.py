@@ -70,7 +70,7 @@ def test_get_exchange_rate(monkeypatch):
 
     def fake_urlopen(url, timeout=10):
         return DummyResponse(
-            '{"success": true, "base": "BRL", "rates": {"USD": 0.2}}'
+            '{"result": "success", "base_code": "BRL", "rates": {"USD": 0.2}}'
         )
 
     monkeypatch.setattr('src.expense_tracker.urllib.request.urlopen', fake_urlopen)
